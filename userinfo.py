@@ -47,7 +47,7 @@ async def userinfo(taskvars):
                 if k not in ['PersonId','Address','BirthPlace','City','CivilStatus','Country','FirstName','GivenName','LastName','ZipCode','MunicipalityCode','Parish','Relation']: # List of KIR data
                     user[k] = v     # Added extra data that are not from KIR
 
-            return user     # Return what we found
+            return {'data':user}     # Return what we found
 
     except Exception as e:
         raise WorkerError(f"fetchUserInfo worker fatal error: {traceback.format_exc()}")       # Okänt fel
