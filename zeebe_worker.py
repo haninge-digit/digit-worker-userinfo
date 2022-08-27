@@ -29,7 +29,7 @@ SIGTERM = False     # Mutable. Set to True when SIGTERM or SIGINT is recieved
 """
 Deploy BPMN-workflow to Camunda
 """
-def deploy_worker_to_camunda(zeebe_stub, worker_name):
+async def deploy_worker_to_camunda(zeebe_stub, worker_name):
     if os.path.exists(f"{worker_name}.bpmn"):       # Read the definition file if it exists
         with open(f"{worker_name}.bpmn", "rb") as process_definition_file:
             process_definition = process_definition_file.read()
@@ -47,7 +47,7 @@ def deploy_worker_to_camunda(zeebe_stub, worker_name):
         process_definition = str.encode(process_template.render(vars))      # Build the BPMN definition. Encode into byte-string
 
     process = Resource(name=f"{worker_name}.bpmn",content=process_definition)
-    response = zeebe_stub.DeployResource(DeployResourceRequest(resources=[process]))
+    response = await zeebe_stub.DeployResource(DeployResourceRequest(resources=[process]))
     logging.info(f"Deployed BPMN process {response.deployments[0].process.bpmnProcessId} as version {response.deployments[0].process.version}")
 
 
@@ -70,7 +70,7 @@ async def worker_loop(worker_instance, topic=None):
         if not await zeebe_is_running(stub):
             return      # Zeebe is not running!
 
-        deploy_worker_to_camunda(stub, worker_instance.queue_name)    # Start by deploying worker process to Camunda
+        await deploy_worker_to_camunda(stub, worker_instance.queue_name)    # Start by deploying worker process to Camunda
 
         logging.info(f"Starting worker loop. Topic={topic}, Worker={worker_id}")
 
