@@ -4,9 +4,6 @@ import asyncio
 
 from UserInfo import UserInfo
 
-from zeebe_worker import worker_loop
-from http_server import http_server
-
 
 """ 
 Environment
@@ -32,9 +29,11 @@ def main():
     loop = asyncio.new_event_loop()         # And an async loop
 
     if RUN_ZEEBE_LOOP:
+        from zeebe_worker import worker_loop
         zeebe_runner = loop.create_task(worker_loop(userinfo_worker))       # Create Zeebe worker loop
 
     if RUN_HTTP_SERVER:
+        from http_server import http_server
         http_runner = loop.create_task(http_server(userinfo_worker, HTTP_SERVER_PORT))        # Create http server
 
     try:
