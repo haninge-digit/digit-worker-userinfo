@@ -14,7 +14,7 @@ Environment
 ZEEBE_ADDRESS = os.getenv('ZEEBE_ADDRESS',"camunda-zeebe-gateway.camunda-zeebe:26500")
 RUN_ZEEBE_LOOP = os.getenv('RUN_ZEEBE_LOOP',"true") == "true"
 RUN_HTTP_SERVER = os.getenv('RUN_HTTP_SERVER',"false") == "true"
-HTTP_SERVER_PORT = int(os.getenv('HTTP_SERVER_PORT',"8080"))
+HTTP_SERVER_PORT = int(os.getenv('HTTP_SERVER_PORT',"8000"))
 
 DEBUG_MODE = os.getenv('DEBUG',"false") == "true"                       # Global DEBUG logging
 LOGFORMAT = "%(asctime)s %(funcName)-10s [%(levelname)s] %(message)s"   # Log format

@@ -16,7 +16,6 @@ externalDocs:
   url: http://swagger.io
 servers:
   - url: http://localhost:8000
-  - url: https://camunda-wrapper.k8s.violaberg.nu/worker
   - url: https://camunda-wrapper.dev.digit.haninge.se/worker
 paths:
   /userinfo:
@@ -45,19 +44,19 @@ components:
       properties:
         person_id:
           type: string
-          example: 195512313551
+          example: 195511262213
         first_name:
           type: string
-          example: John
+          example: Nisse
         last_name:
           type: string
-          example: James
+          example: Pärlemo
         full_name:
           type: string
-          example: John Arthur James
+          example: Nisse Johan Pärlemo
         address:
           type: string
-          example: Violabergsvägen 4
+          example: Violabergsvägen 66A
         zipcode:
           type: string
           example: 13668
@@ -66,7 +65,8 @@ components:
           example: VENDELSÖ
         email:
           type: string
-          example: hakan@violaberg.nu
+          example: nisse.parlemo@gmail.com
         mobile:
           type: string
-          example: 0702178177
+          example: 0712976514
+
