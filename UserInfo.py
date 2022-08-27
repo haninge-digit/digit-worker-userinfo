@@ -56,5 +56,5 @@ class UserInfo(object):
             if k not in ['PersonId','Address','BirthPlace','City','CivilStatus','Country','FirstName','GivenName','LastName','ZipCode','MunicipalityCode','Parish','Relation']: # List of KIR data
                 user[k] = v     # Added extra data that are not from KIR
 
-        # return {'data': user}     # Return what we found
-        return user     # Return what we found
+        return {'user': user}     # Return what we found
+        # return user     # Return what we found
