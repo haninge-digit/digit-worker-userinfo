@@ -44,7 +44,7 @@ components:
       properties:
         person_id:
           type: string
-          example: 195511262213
+          example: "195511262213"
         first_name:
           type: string
           example: Nisse
@@ -59,7 +59,7 @@ components:
           example: Violabergsvägen 66A
         zipcode:
           type: string
-          example: 13668
+          example: "13668"
         city:
           type: string
           example: VENDELSÖ
@@ -68,5 +68,5 @@ components:
           example: nisse.parlemo@gmail.com
         mobile:
           type: string
-          example: 0712976514
+          example: "0712976514"
 
