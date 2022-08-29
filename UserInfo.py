@@ -1,33 +1,42 @@
 import httpx
 import os
-import traceback
+# import traceback
 
-from worker import WorkerError
+# from zeebe_worker import WorkerError
 
 USERINFOCASH = os.getenv('USERINFOCASH',"userinfocash.worker-services:8080") # This is the default
 
-def normpnum(pnum):     # This function is a quick fix and needs rework!
-    pnum = pnum.replace('-','')
-    if pnum.isdigit():
-        if len(pnum) == 10:
-            pnum = "19"+pnum if int(pnum[:2]) > 22 else "20"+pnum
-        if len(pnum) == 12:
-            return pnum
-    return(pnum)
+class UserInfo(object):
 
-async def userinfo(taskvars):
-    try:
+    queue_name = "userinfo"
+
+    def __init__(self):
+        pass
+
+
+    def normpnum(self, pnum):     # This function is a quick fix and needs rework!
+        pnum = pnum.replace('-','')
+        if pnum.isdigit():
+            if len(pnum) == 10:
+                pnum = "19"+pnum if int(pnum[:2]) > 22 else "20"+pnum
+            if len(pnum) == 12:
+                return pnum
+        return(pnum)
+
+    async def worker(self, taskvars):
+        if taskvars['HTTP_METHOD'] != "GET":
+            return {'DIGIT_ERROR':"Only GET method is supported at the moment"}
         if 'userid' not in taskvars:
             return {'DIGIT_ERROR':"Missing mandatory variable 'userid'"}
         if taskvars['userid'] == "":        # Not allowed!
             return {'DIGIT_ERROR':"Anonymous users are not allowed to request user info"}
         userID = taskvars['personal_number'] if 'personal_number' in taskvars and taskvars['personal_number']!= "" else taskvars['userid']   # This might need to have restrictions?
-        userID = normpnum(userID)
+        userID = self.normpnum(userID)
 
         async with httpx.AsyncClient(timeout=10, verify=False) as client:
             r = await client.get(f"http://{USERINFOCASH}/userinfo/{userID}")
             if r.status_code != 200:
-                return {'DIGIT_ERROR':r.text}       # Error from userinfocash service
+                return {'DIGIT_ERROR': r.text, 'DIGIT_ERROR_STATUS_CODE': r.status_code}       # Error from userinfocash service
 
         userinfo = r.json()
         user = {}   # user values to return
@@ -47,7 +56,5 @@ async def userinfo(taskvars):
             if k not in ['PersonId','Address','BirthPlace','City','CivilStatus','Country','FirstName','GivenName','LastName','ZipCode','MunicipalityCode','Parish','Relation']: # List of KIR data
                 user[k] = v     # Added extra data that are not from KIR
 
-        return {'data':user}     # Return what we found
-
-    except Exception as e:
-        raise WorkerError(f"fetchUserInfo worker fatal error: {traceback.format_exc()}")       # Okänt fel
+        return {'user': user}     # Return what we found
+        # return user     # Return what we found
