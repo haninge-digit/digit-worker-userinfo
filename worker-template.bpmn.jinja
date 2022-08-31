@@ -8,6 +8,9 @@
     <bpmn:serviceTask id="worker_task" name="{{ servicetask_name }}">
       <bpmn:extensionElements>
         <zeebe:taskDefinition type="{{ task_queue }}" retries="3" />
+        <zeebe:taskHeaders>
+          <zeebe:header key="_STANDALONE" value="true" />
+        </zeebe:taskHeaders>
       </bpmn:extensionElements>
       <bpmn:incoming>Flow_0wubm9v</bpmn:incoming>
       <bpmn:outgoing>Flow_09saoo9</bpmn:outgoing>
