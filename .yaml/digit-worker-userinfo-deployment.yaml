@@ -3,6 +3,8 @@ apiVersion: apps/v1
 metadata:
   name: userinfo
   namespace: camunda-workers
+  labels:
+    app: digit-plattform
 spec:
   replicas: 1
   selector:
@@ -12,6 +14,7 @@ spec:
     metadata:
       labels:
         app: userinfo
+        app.kubernetes.io/name: userinfo
     spec:
       imagePullSecrets:
       - name: ghcr-pull-secret
