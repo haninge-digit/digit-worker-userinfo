@@ -24,19 +24,25 @@ class UserInfo(object):
         return(pnum)
 
     async def worker(self, taskvars):
-        if taskvars['HTTP_METHOD'] != "GET":
-            return {'DIGIT_ERROR':"Only GET method is supported at the moment"}
+        if taskvars['_HTTP_METHOD'] != "GET":
+            return {'_DIGIT_ERROR':"Only GET method is supported at the moment"}
         if 'userid' not in taskvars:
-            return {'DIGIT_ERROR':"Missing mandatory variable 'userid'"}
+            return {'_DIGIT_ERROR':"Missing mandatory variable 'userid'"}
         if taskvars['userid'] == "":        # Not allowed!
-            return {'DIGIT_ERROR':"Anonymous users are not allowed to request user info"}
+            return {'_DIGIT_ERROR':"Anonymous users are not allowed to request user info"}
         userID = taskvars['personal_number'] if 'personal_number' in taskvars and taskvars['personal_number']!= "" else taskvars['userid']   # This might need to have restrictions?
         userID = self.normpnum(userID)
 
+        args = {}
+        if '_NO_UPDATE' in taskvars:
+            args['_NO_UPDATE'] = ""
+        if '_NO_CASH' in taskvars:
+            args['_NO_CASH'] = ""
+
         async with httpx.AsyncClient(timeout=10, verify=False) as client:
-            r = await client.get(f"http://{USERINFOCASH}/userinfo/{userID}")
+            r = await client.get(f"http://{USERINFOCASH}/userinfo/{userID}", params=args)
             if r.status_code != 200:
-                return {'DIGIT_ERROR': r.text, 'DIGIT_ERROR_STATUS_CODE': r.status_code}       # Error from userinfocash service
+                return {'_DIGIT_ERROR': r.text, '_DIGIT_ERROR_STATUS_CODE': r.status_code}       # Error from userinfocash service
 
         userinfo = r.json()
         user = {}   # user values to return
