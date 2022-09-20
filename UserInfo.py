@@ -46,21 +46,30 @@ class UserInfo(object):
 
         userinfo = r.json()
         user = {}   # user values to return
-        user['personId'] = userinfo['PersonId'].strip()
-        if ',' in userinfo['GivenName']:
-            user['firstName'] = userinfo['GivenName'].split(',')[1].strip()    # Get first (given) name from last part of 'GivenName'
-        else:
-            user['firstName'] = userinfo['GivenName'].strip()      # Just grab what is there
-        user['lastName'] = userinfo['LastName'].strip()
-        user['fullName'] = userinfo['FirstName'].strip()+" "+userinfo['LastName'].strip()
-        user['address'] = userinfo['Address'].strip()
-        user['zipcode'] = userinfo['ZipCode'].strip()
-        user['city'] = userinfo['City'].strip()
-        # user['country'] = userinfo['Country'].strip()       # Skip this for now
-        user['municipalityCode'] = userinfo['MunicipalityCode'].strip()
-        for k,v in userinfo.items():
-            if k not in ['PersonId','Address','BirthPlace','City','CivilStatus','Country','FirstName','GivenName','LastName','ZipCode','MunicipalityCode','Parish','Relation']: # List of KIR data
-                user[k] = v     # Added extra data that are not from KIR
+
+        if userID.isdigit():        # Personnummer. External user!
+            user['personId'] = userinfo['PersonId'].strip()
+            if ',' in userinfo['GivenName']:
+                user['firstName'] = userinfo['GivenName'].split(',')[1].strip()    # Get first (given) name from last part of 'GivenName'
+            else:
+                user['firstName'] = userinfo['GivenName'].strip()      # Just grab what is there
+            user['lastName'] = userinfo['LastName'].strip()
+            user['fullName'] = userinfo['FirstName'].strip()+" "+userinfo['LastName'].strip()
+            user['address'] = userinfo['Address'].strip()
+            user['zipcode'] = userinfo['ZipCode'].strip()
+            user['city'] = userinfo['City'].strip()
+            # user['country'] = userinfo['Country'].strip()       # Skip this for now
+            user['municipalityCode'] = userinfo['MunicipalityCode'].strip()
+            for k,v in userinfo.items():
+                if k not in ['PersonId','Address','BirthPlace','City','CivilStatus','Country','FirstName','GivenName','LastName','ZipCode','MunicipalityCode','Parish','Relation']: # List of KIR data
+                    user[k] = v     # Added extra data that are not from KIR
+        else:                   # Internal user
+            # user = userinfo
+            user['firstName'] = userinfo['givenName']
+            user['lastName'] = userinfo['surname']
+            user['fullName'] = userinfo['displayName']
+            user['department'] = userinfo['department']
+            user['email'] = userinfo['mail']
 
         return {'user': user}     # Return what we found
         # return user     # Return what we found
