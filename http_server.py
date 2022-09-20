@@ -22,7 +22,7 @@ async def http_handler(request):
     # logging.info(f"Request for userinfo for {user_id}")
 
     query_args = dict(request.query)        # Grab all query args
-    query_args['HTTP_METHOD'] = request.method  # Add method
+    query_args['_HTTP_METHOD'] = request.method  # Add method
 
     worker = request.app['WORKER']      # Get worker refeence
     resp = await worker(query_args)     # Run the worker
