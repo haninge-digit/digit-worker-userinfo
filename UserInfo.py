@@ -68,6 +68,7 @@ class UserInfo(object):
                 user['fullName'] = userinfo['displayName']
                 user['department'] = userinfo['department']
                 user['email'] = userinfo['mail']
+                user['managerName'] = userinfo['managerName']
 
             return {'user': user}     # Return what we found
 
