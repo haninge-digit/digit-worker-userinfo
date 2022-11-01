@@ -72,7 +72,7 @@ class UserInfo(object):
 
             return {'user': user}     # Return what we found
 
-        elif taskvars['_HTTP_METHOD'] == "PATCH":
+        elif taskvars['_HTTP_METHOD'] in ["PATCH","POST"]:      # The use of POST here is just until Epi API is updated!!!
             if '_JSON_BODY' not in taskvars:
                 return {'_DIGIT_ERROR':"Missing JSON-body in request (nothing to patch)!"}
             patch_data = json.loads(taskvars['_JSON_BODY'])
