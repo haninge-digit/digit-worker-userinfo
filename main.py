@@ -32,7 +32,7 @@ async def main():
 
     if RUN_ZEEBE_LOOP:
         from zeebe_worker import worker_loop
-        await worker_loop(userinfo_worker, topic="qq1q")       # Create and run Zeebe worker loop
+        await worker_loop(userinfo_worker)       # Create and run Zeebe worker loop
     
     else:
         while True:
