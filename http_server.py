@@ -24,6 +24,7 @@ async def http_handler(request):
     query_args['_HTTP_METHOD'] = request.method  # Add method
     if request.can_read_body and request.content_type == 'application/json':
         query_args['_JSON_BODY'] = json.dumps(await request.json())
+    query_args['_STANDALONE'] = ""
 
     worker = request.app['WORKER']      # Get worker refeence
     resp = await worker(query_args)     # Run the worker
@@ -56,4 +57,4 @@ async def http_server(worker, port):
     site = web.TCPSite(runner, port=port)
     await site.start()
 
-    return runner
+    return site
