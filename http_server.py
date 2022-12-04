@@ -2,16 +2,13 @@ import os
 import json
 import logging
 
-from aiohttp import web, ClientSession, BasicAuth, ClientTimeout, log
-from aiohttp.web import HTTPNotFound, HTTPBadRequest, HTTPNotImplemented, HTTPServiceUnavailable, GracefulExit
-# aiohttp.log.access_logger
+from aiohttp import web
 
-""" 
+
+"""
 Environment
 """
-DEBUG_MODE = os.getenv('DEBUG','false') == "true"                       # Global DEBUG logging
-
-LOGFORMAT = "%(asctime)s %(funcName)-10s [%(levelname)s] %(message)s"   # Log format
+HTTP_SERVER_PORT = int(os.getenv('HTTP_SERVER_PORT',"8000"))
 
 
 """ 
@@ -25,16 +22,15 @@ async def http_handler(request):
     if request.can_read_body and request.content_type == 'application/json':
         query_args['_JSON_BODY'] = json.dumps(await request.json())
     query_args['_STANDALONE'] = ""
-
-    worker = request.app['WORKER']      # Get worker refeence
+    
+    worker = request.app['WORKER']      # Get worker reference
     resp = await worker(query_args)     # Run the worker
     
     return web.json_response(resp)      # Return the result
 
 
-
-async def http_server(worker, port):
-    logging.info(f"Starting http-server. Listens on /{worker.queue_name} on port {port}")
+async def http_server(worker):
+    logging.info(f"Starting HTTP-server. Listens on /{worker.queue_name} on port {HTTP_SERVER_PORT}")
 
     app = web.Application()
 
@@ -53,8 +49,7 @@ async def http_server(worker, port):
     runner = web.AppRunner(app)
 
     await runner.setup()
-    # site = web.TCPSite(runner, 'localhost', port)
-    site = web.TCPSite(runner, port=port)
+    site = web.TCPSite(runner, port=HTTP_SERVER_PORT)
     await site.start()
 
     return site

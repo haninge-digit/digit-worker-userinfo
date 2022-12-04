@@ -5,7 +5,6 @@ import uuid
 import json
 import traceback
 import signal
-import time
 
 import grpc
 from zeebe_grpc import gateway_pb2_grpc
@@ -103,7 +102,7 @@ Asynchronous function that calls the worker function and completes the job
 Can be more than one of these running
 """
 async def run_worker(workfunc, job, worker_id, stub):
-    logging.info(f"Got a task to do.      Task={workfunc.__name__}, TaskID={job.key}, Worker={worker_id}")
+    logging.info(f"Got a task to do.  TaskID={job.key}, ProcessID={job.bpmnProcessId}, ProcessInstance={job.processInstanceKey}, ElementID={job.elementId}, ElementInstance={job.elementInstanceKey}")
     logging.debug(f"Retries: {job.retries}  Deadline: {job.deadline}  Custom:{job.customHeaders}")
     if job.retries == 0:
         logging.error(f"Got a canceled job?")       # Don't know why these jobs are active?
@@ -114,8 +113,8 @@ async def run_worker(workfunc, job, worker_id, stub):
         worker_vars = json.loads(job.customHeaders)     # These variables are configured in BPMN
         newvars = await workfunc(vars|worker_vars)    # Do the work and get new variables in return
 
-        logging.info(f"Mark task as complete. Task={workfunc.__name__}, TaskID={job.key}, Worker={worker_id}")
         await stub.CompleteJob(CompleteJobRequest(jobKey=job.key, variables=json.dumps(newvars)))   # Mark tas as completed and with new variables
+        logging.info(f"Task marked as complete. TaskID={job.key}")
 
     except WorkerError as e:    # Worker signals some error. Could be temporary (e.retries > 0)
         if e.retries < 0:
