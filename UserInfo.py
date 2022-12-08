@@ -89,8 +89,20 @@ class UserInfo(object):
                     return self._handle_worker_error(stand_alone, f"Couldn't connect to {USERINFOCASH} server")
                 if r.status_code != 200:
                     return self._handle_worker_error(stand_alone, f"PATCH userinfocash returned status code {r.status_code}")
+            return {}
+
+        elif taskvars['_HTTP_METHOD'] == "DELETE":      # The caller wants to delete cash data
+            async with httpx.AsyncClient(timeout=10, verify=False) as client:
+                try:
+                    r = await client.delete(f"http://{USERINFOCASH}/userinfo/{userID}")
+                except httpx.ConnectError:
+                    return self._handle_worker_error(stand_alone, f"Couldn't connect to {USERINFOCASH} server")
+                if r.status_code != 200:
+                    return self._handle_worker_error(stand_alone, f"DELETE userinfocash returned status code {r.status_code}")
+            return {}
+
         else:
-            return self._handle_worker_error(stand_alone, "Only GET and PATCH methods are supported.")
+            return self._handle_worker_error(stand_alone, "Only GET, PATCH and DELETE methods are supported.")
 
 
     def _handle_worker_error(self,stand_alone,loggtext):
