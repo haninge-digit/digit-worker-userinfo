@@ -29,9 +29,12 @@ class UserInfo(object):
         stand_alone = '_STANDALONE' in taskvars
 
         if 'userid' not in taskvars or taskvars['userid'] == "":
+            logging.error(f"Call is missing mandatory variable 'userid'")
             return self._handle_worker_error(stand_alone, "Missing mandatory variable 'userid'")
         userID = taskvars['personal_number'] if 'personal_number' in taskvars and taskvars['personal_number'] != "" else taskvars['userid']   # Is this still a valid request?
         userID = self.normpnum(userID)
+
+        logging.debug(f"Running {taskvars['_HTTP_METHOD'] } method for userid {userID}")
 
         if taskvars['_HTTP_METHOD'] == "GET":
             args = {}
