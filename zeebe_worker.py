@@ -5,7 +5,6 @@ import uuid
 import json
 import traceback
 import signal
-import time
 
 import grpc
 from zeebe_grpc import gateway_pb2_grpc
@@ -78,13 +77,16 @@ async def worker_loop(worker_instance, topic=None):
         poll_time = 20000   # Time in ms to poll Zeebe. Longer than 30 seconds affects pod termination grace period.
         ajr = ActivateJobsRequest(type=topic,worker=worker_id,timeout=locktime,
                                   maxJobsToActivate=1,requestTimeout=poll_time)
-        while not SIGTERM:     # Loop until terminated
-            logging.debug("Requesting jobs to do")
-            async for response in stub.ActivateJobs(ajr):
-                for job in response.jobs:
-                    task = asyncio.create_task(run_worker(worker_instance.worker, job, worker_id, stub))         # Schedule an asynchronous task to handle the load. Don't wait for completion.
-                    worker_tasks.add(task)      # Save a reference to the coroutine. This prevents it from beeing garbage collected.
-                    task.add_done_callback(worker_tasks.discard)        # Will remove the reference once the task is completed.
+        try:
+            while not SIGTERM:     # Loop until terminated or Zeebe error
+                logging.debug("Requesting jobs to do")
+                async for response in stub.ActivateJobs(ajr):
+                    for job in response.jobs:
+                        task = asyncio.create_task(run_worker(worker_instance.worker, job, worker_id, stub))         # Schedule an asynchronous task to handle the load. Don't wait for completion.
+                        worker_tasks.add(task)      # Save a reference to the coroutine. This prevents it from beeing garbage collected.
+                        task.add_done_callback(worker_tasks.discard)        # Will remove the reference once the task is completed.
+        except grpc.aio.AioRpcError as grpc_error:      # Something failed withe Zeebe
+            handle_grpc_errors(grpc_error,"in worker loop")
 
     # Time to terminate worker
     logging.info(f"Async workers runnning: {len(worker_tasks)}")
@@ -100,7 +102,7 @@ Asynchronous function that calls the worker function and completes the job
 Can be more than one of these running
 """
 async def run_worker(workfunc, job, worker_id, stub):
-    logging.info(f"Got a task to do.      Task={workfunc.__name__}, TaskID={job.key}, Worker={worker_id}")
+    logging.info(f"Got a task to do.  TaskID={job.key}, ProcessID={job.bpmnProcessId}, ProcessInstance={job.processInstanceKey}, ElementID={job.elementId}, ElementInstance={job.elementInstanceKey}")
     logging.debug(f"Retries: {job.retries}  Deadline: {job.deadline}  Custom:{job.customHeaders}")
     if job.retries == 0:
         logging.error(f"Got a canceled job?")       # Don't know why these jobs are active?
@@ -111,8 +113,8 @@ async def run_worker(workfunc, job, worker_id, stub):
         worker_vars = json.loads(job.customHeaders)     # These variables are configured in BPMN
         newvars = await workfunc(vars|worker_vars)    # Do the work and get new variables in return
 
-        logging.info(f"Mark task as complete. Task={workfunc.__name__}, TaskID={job.key}, Worker={worker_id}")
         await stub.CompleteJob(CompleteJobRequest(jobKey=job.key, variables=json.dumps(newvars)))   # Mark tas as completed and with new variables
+        logging.info(f"Task marked as complete. TaskID={job.key}")
 
     except WorkerError as e:    # Worker signals some error. Could be temporary (e.retries > 0)
         if e.retries < 0:

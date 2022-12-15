@@ -20,7 +20,7 @@ spec:
       - name: ghcr-pull-secret
       containers:
         - name: userinfo
-          image: ghcr.io/haninge-digit/digit-worker-userinfo:main   # Set tag to "lab" for lab versions and "latest" for production versions
+          image: ghcr.io/haninge-digit/digit-worker-userinfo:latest   # Set tag to "lab" for lab versions and "latest" for production versions
           imagePullPolicy: Always
           env:
             - name: DEBUG
@@ -28,7 +28,7 @@ spec:
             - name: ZEEBE_ADDRESS
               value: camunda-zeebe-gateway.camunda-zeebe:26500
             - name: USERINFOCASH
-              value: userinfocash.worker-services:8080
+              value: userinfocash:8080
           resources:    # Might need to be tailored
             limits:
               memory: "128Mi"

@@ -1,0 +1,53 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: userinfo
+  namespace: camunda-workers
+  labels:
+    app: digit-plattform
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: userinfo
+  template:
+    metadata:
+      labels:
+        app: userinfo
+        app.kubernetes.io/name: userinfo
+    spec:
+      imagePullSecrets:
+      - name: ghcr-pull-secret
+      containers:
+        - name: userinfo
+          image: ghcr.io/haninge-digit/digit-worker-userinfo:main   # Set tag to "lab" for lab versions and "latest" for production versions
+          imagePullPolicy: Always
+          env:
+            - name: DEBUG
+              value: 'false'  # Change to 'true' for debugging
+            - name: ZEEBE_ADDRESS
+              value: camunda-zeebe-gateway.camunda-zeebe:26500
+            - name: USERINFOCASH
+              value: userinfocash:8080
+          resources:    # Might need to be tailored
+            limits:
+              memory: "128Mi"
+              cpu: "100m"
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          securityContext: {}
+      tolerations:
+      - key: "kubernetes.azure.com/scalesetpriority"
+        operator: "Equal"
+        value: "spot"
+        effect: "NoSchedule"
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      dnsPolicy: ClusterFirst
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 25%
+  revisionHistoryLimit: 10
+  progressDeadlineSeconds: 600
