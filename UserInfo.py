@@ -45,6 +45,10 @@ class UserInfo(object):
                     r = await client.get(f"http://{USERINFOCASH}/userinfo/{userID}", params=args)
                 except httpx.ConnectError:
                     return self._handle_worker_error(stand_alone, f"Couldn't connect to {USERINFOCASH} server")
+                except httpx.ReadTimeout:
+                    return self._handle_worker_error(stand_alone, f"Request to {USERINFOCASH} server timedout")
+                except Exception as e:
+                    return self._handle_worker_error(stand_alone, f"Request to {USERINFOCASH} server threw unexpected exception {e=}")
                 if r.status_code != 200:
                     return self._handle_worker_error(stand_alone, f"GET userinfocash returned status code {r.status_code}")
 
